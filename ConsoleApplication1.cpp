@@ -1,0 +1,282 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+const int NUMOFPRODS = 50;
+const int MAX_REVIEW_LENGTH = 25;
+
+// Class definition for movieList
+class movieList {
+public:
+    movieList() : pos(0), movierating{}, releaseYear{}, reviews{} {}
+
+    void runMovieSystem();
+    void addMovie();
+    void modifyMovie();
+    void displayMovieList();
+    void searchMovie();
+    void bubbleSort();
+
+private:
+    // Array to store the names of movies
+    string movieNames[NUMOFPRODS];
+
+    // Array to store the ratings of each movie
+    int movierating[NUMOFPRODS];
+
+    // Array to store the release years of each movie
+    double releaseYear[NUMOFPRODS];
+
+    // Array to store reviews for each movie
+    string reviews[NUMOFPRODS];
+
+    int pos;
+};
+
+// Main Function
+int main() {
+    ifstream inFile; // input file to read values into array
+    inFile.open("movies.txt");
+
+    movieList movieListSystem;
+
+    // Run the movie system
+    movieListSystem.runMovieSystem();
+
+    inFile.close(); // Close input file
+
+    return 0;
+}
+
+// Member functions
+
+void movieList::runMovieSystem() {
+    int decision = 0;
+    pos = 0; // Initialize pos
+
+    do {
+        // Display Menu Options
+        cout << "Movie List" << endl;
+        cout << "Press 1 to add to the movie list" << endl;
+        cout << "Press 2 to Modify from the movie list" << endl;
+        cout << "Press 3 to display the movie list" << endl;
+        cout << "Press 4 to search a movie" << endl;
+        cout << "Press 5 to exit the program" << endl;
+
+        cin >> decision;
+
+        // Actions based on user input
+        if (decision == 1) {
+            addMovie();
+        }
+        else if (decision == 2) {
+            modifyMovie();
+        }
+        else if (decision == 3) {
+            bubbleSort();
+            displayMovieList();
+        }
+        else if (decision == 4) {
+            searchMovie();
+        }
+        else if (decision == 5) {
+            cout << "Exiting the program." << endl;
+        }
+        else {
+            cout << "Invalid choice. Please try again." << endl;
+        }
+    } while (decision != 5); // Continue the loop until the user chooses to exit
+}
+
+void movieList::addMovie() {
+    ofstream outfile("movies.txt", ios::app);
+
+    // Prompt and store the name of the movie
+    cout << "Enter name of movie: ";
+    cin >> movieNames[pos];
+    outfile << movieNames[pos] << " ";
+
+    // Prompt and store the rating of the movie with validation
+    do {
+        cout << "Enter rating (1 - 5): ";
+        cin >> movierating[pos];
+
+        if (movierating[pos] < 1 || movierating[pos] > 5) {
+            cout << "Invalid rating. Please enter a rating between 1 and 5." << endl;
+        }
+    } while (movierating[pos] < 1 || movierating[pos] > 5);
+
+    outfile << movierating[pos] << " ";
+
+    // Prompt and store the release year of the movie
+    cout << "Enter what year the movie released: ";
+    cin >> releaseYear[pos];
+    outfile << releaseYear[pos] << " ";
+
+    // Prompt and store the review of the movie
+    cout << "Enter review for the movie (up to " << MAX_REVIEW_LENGTH << " characters): ";
+    cin.ignore(); 
+    getline(cin, reviews[pos]);
+
+   
+    outfile << reviews[pos] << endl;
+
+    outfile.close();
+
+ 
+    pos++;
+}
+
+void movieList::modifyMovie() {
+    string modifyMovie;
+    ifstream inFile("movies.txt");
+
+    // Prompt for the name of the movie to modify
+    cout << "Enter the name of the movie you want to modify: ";
+    cin >> modifyMovie;
+
+    bool found = false;
+
+    // Read data from the file into arrays
+    pos = 0;
+    while (inFile >> movieNames[pos] >> movierating[pos] >> releaseYear[pos]) {
+        inFile.ignore();
+        getline(inFile, reviews[pos]); // Read the review
+        if (movieNames[pos] == modifyMovie) {
+            found = true;
+
+            // Prompt and update the rating for the movie with validation
+            do {
+                cout << "Enter the new rating for the movie: ";
+                cin >> movierating[pos];
+
+                if (movierating[pos] < 1 || movierating[pos] > 5) {
+                    cout << "Invalid rating. Please enter a rating between 1 and 5." << endl;
+                }
+            } while (movierating[pos] < 1 || movierating[pos] > 5);
+
+            // Prompt and update the release year for the movie
+            cout << "Enter the new release year for the movie: ";
+            cin >> releaseYear[pos];
+
+            // Prompt and update the review for the movie
+            cout << "Enter the new review for the movie (up to " << MAX_REVIEW_LENGTH << " characters): ";
+            cin.ignore(); // Clear the input buffer
+            getline(cin, reviews[pos]);
+        }
+        pos++;
+    }
+
+    inFile.close();
+
+    // Rewrite the entire file with the modified data
+    ofstream outfile("movies.txt");
+    for (int i = 0; i < pos; i++) {
+        outfile << movieNames[i] << " " << movierating[i] << " " << releaseYear[i] << " " << reviews[i] << endl;
+    }
+    outfile.close();
+
+    if (!found) {
+        cout << "Movie not found in the inventory." << endl;
+    }
+}
+
+void movieList::displayMovieList() {
+    // Open the file in read mode
+    ifstream inFile("movies.txt");
+
+    if (!inFile.is_open()) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    // Read the data from the file into the arrays
+    pos = 0;
+    while (inFile >> movieNames[pos] >> movierating[pos] >> releaseYear[pos]) {
+        inFile.ignore(); // Ignore the space
+        getline(inFile, reviews[pos]); // Read the review
+        pos++;
+    }
+
+    // Close the file
+    inFile.close();
+
+    // Bubble sort the data
+    bubbleSort();
+
+    // Display information for each movie in the inventory
+    for (int i = 0; i < pos; i++) {
+        cout << "Movie: " << movieNames[i] << endl;
+        cout << "Movie rating: " << movierating[i] << endl;
+        cout << "Release year: " << releaseYear[i] << endl;
+        cout << "Review: " << reviews[i] << endl << endl;
+    }
+}
+
+void movieList::bubbleSort() {
+    // Bubble sort the arrays based on movie names
+    for (int i = 0; i < pos - 1; i++) {
+        for (int j = 0; j < pos - i - 1; j++) {
+            // Compare movie names
+            if (movieNames[j] > movieNames[j + 1]) {
+
+                string tempName = movieNames[j];
+                movieNames[j] = movieNames[j + 1];
+                movieNames[j + 1] = tempName;
+
+                int tempRating = movierating[j];
+                movierating[j] = movierating[j + 1];
+                movierating[j + 1] = tempRating;
+
+                double tempYear = releaseYear[j];
+                releaseYear[j] = releaseYear[j + 1];
+                releaseYear[j + 1] = tempYear;
+
+                string tempReview = reviews[j];
+                reviews[j] = reviews[j + 1];
+                reviews[j + 1] = tempReview;
+            }
+        }
+    }
+}
+
+void movieList::searchMovie() {
+    string exactSearch;
+
+    cin.ignore(); 
+
+    cout << "Enter the name of the movie you want to search for: ";
+    getline(cin, exactSearch);
+
+    ifstream inFile("movies.txt");
+    if (!inFile.is_open()) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    string movieName;
+    int movieRating;
+    double releaseYear;
+    string review;
+
+    bool found = false;
+
+    while (inFile >> movieName >> movieRating >> releaseYear) {
+        inFile.ignore(); // Ignores the space
+        getline(inFile, review); // Read the review
+        if (movieName == exactSearch) {
+            found = true;
+            cout << "Movie: " << movieName << endl;
+            cout << "Movie rating: " << movieRating << endl;
+            cout << "Release year: " << releaseYear << endl;
+            cout << "Review: " << review << endl << endl;
+        }
+    }
+
+    inFile.close();
+
+    if (!found) {
+        cout << "Movie not found in the inventory." << endl;
+    }
+}
