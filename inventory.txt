@@ -1,0 +1,10 @@
+More_Life 45 20.00
+Vespertine 20 19.99
+Song_of_Her's 12 15.00
+Treasure 8 19.00
+Honeydew 10 15.00
+United 10 10.00
+Yellow_and_Such 5 19.99
+Apricot_Princess 6 15.03
+Goblin 13 6.00
+
