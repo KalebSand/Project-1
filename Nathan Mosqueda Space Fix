@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 const int INITIAL_CAPACITY = 25;
@@ -46,9 +47,9 @@ int main() {
     ifstream inFile; // input file to read values into array
     inFile.open("movies.txt");
 
-  if (!inFile.is_open())
-    cout << "File: movies.txt is not found" << endl;
-    
+    if (!inFile.is_open())
+        cout << "File: movies.txt is not found" << endl;
+
     movieList movieListSystem;
 
     // Run the movie system
@@ -110,7 +111,7 @@ void movieList::addMovie() {
     // Prompt and store the name of the movie
     cout << "Enter name of movie: ";
     getline(cin, movieNames[pos]);
-    outfile << movieNames[pos] << " " << endl;
+    outfile << movieNames[pos] << "|";
 
     // Prompt and store the rating of the movie with validation
     do {
@@ -122,12 +123,12 @@ void movieList::addMovie() {
         }
     } while (movierating[pos] < 1 || movierating[pos] > 5);
 
-    outfile << movierating[pos] << " ";
+    outfile << movierating[pos] << "|";
 
     // Prompt and store the release year of the movie
     cout << "Enter what year the movie released: ";
     cin >> releaseYear[pos];
-    outfile << releaseYear[pos] << " ";
+    outfile << releaseYear[pos] << "|";
 
     // Prompt and store the review of the movie
     cout << "Enter review for the movie (up to " << MAX_REVIEW_LENGTH << " characters): ";
@@ -140,21 +141,22 @@ void movieList::addMovie() {
 
     pos++;
 }
-
 void movieList::modifyMovie() {
     string modifyMovie;
     ifstream inFile("movies.txt");
 
     // Prompt for the name of the movie to modify
     cout << "Enter the name of the movie you want to modify: ";
-    cin >> modifyMovie;
+    getline(cin, modifyMovie);
 
     bool found = false;
+    vector<string> modifiedData;  // to store modified data
 
     // Read data from the file into arrays
     pos = 0;
-    while (inFile >> movieNames[pos] >> movierating[pos] >> releaseYear[pos]) {
-        inFile.ignore();
+    while (getline(inFile, movieNames[pos], '|')) {
+        inFile >> movierating[pos] >> releaseYear[pos];
+        inFile.ignore(); // Consume the '|' character
         getline(inFile, reviews[pos]); // Read the review
         if (movieNames[pos] == modifyMovie) {
             found = true;
@@ -178,6 +180,9 @@ void movieList::modifyMovie() {
             cin.ignore(); // Clear the input buffer
             getline(cin, reviews[pos]);
         }
+        // store data in the vector for later writing
+        modifiedData.push_back(movieNames[pos] + "|" + to_string(movierating[pos]) + "|" +
+                               to_string(releaseYear[pos]) + "|" + reviews[pos]);
         pos++;
     }
 
@@ -185,8 +190,8 @@ void movieList::modifyMovie() {
 
     // Rewrite the entire file with the modified data
     ofstream outfile("movies.txt");
-    for (int i = 0; i < pos; i++) {
-        outfile << movieNames[i] << " " << movierating[i] << " " << releaseYear[i] << " " << reviews[i] << endl;
+    for (const string& data : modifiedData) {
+        outfile << data << endl;
     }
     outfile.close();
 
@@ -194,6 +199,7 @@ void movieList::modifyMovie() {
         cout << "Movie not found in the inventory." << endl;
     }
 }
+
 
 void movieList::displayMovieList() {
     // Open the file in read mode
@@ -206,14 +212,14 @@ void movieList::displayMovieList() {
 
     // Read the data from the file into the arrays
     pos = 0;
-    pos = 0;
-    while (getline(inFile, movieNames[pos])) {
-        inFile >> movierating[pos] >> releaseYear[pos];
-        inFile.ignore(); // Consume the newline character
+    while (getline(inFile, movieNames[pos], '|')) {
+        inFile >> movierating[pos]; // Read the rating
+        inFile.ignore(); // Consume the '|' character
+        inFile >> releaseYear[pos]; // Read the release year
+        inFile.ignore(); // Consume the '|' character
         getline(inFile, reviews[pos]); // Read the review
         pos++;
     }
-
     // Close the file
     inFile.close();
 
@@ -277,8 +283,9 @@ void movieList::searchMovie() {
 
     bool found = false;
 
-    while (inFile >> movieName >> movieRating >> releaseYear) {
-        inFile.ignore(); // Ignores the space
+    while (getline(inFile, movieName, '|')) {
+        inFile >> movieRating >> releaseYear;
+        inFile.ignore(); // Consume the '|' character
         getline(inFile, review); // Read the review
         if (movieName == exactSearch) {
             found = true;
