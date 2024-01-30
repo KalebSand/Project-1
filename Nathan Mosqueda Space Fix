@@ -46,6 +46,9 @@ int main() {
     ifstream inFile; // input file to read values into array
     inFile.open("movies.txt");
 
+  if (!inFile.is_open())
+    cout << "File: movies.txt is not found" << endl;
+    
     movieList movieListSystem;
 
     // Run the movie system
@@ -65,11 +68,11 @@ void movieList::runMovieSystem() {
     do {
         // Display Menu Options
         cout << "Movie List" << endl;
-        cout << "Press 1 to add to the movie list" << endl;
-        cout << "Press 2 to Modify from the movie list" << endl;
-        cout << "Press 3 to display the movie list" << endl;
-        cout << "Press 4 to search a movie" << endl;
-        cout << "Press 5 to exit the program" << endl;
+        cout << "Press [1] to add to the movie list" << endl;
+        cout << "Press [2] to Modify from the movie list" << endl;
+        cout << "Press [3] to display the movie list" << endl;
+        cout << "Press [4] to search a movie" << endl;
+        cout << "Press [5] to exit the program" << endl;
 
         cin >> decision;
         cin.ignore(); // Clear the input buffer
@@ -106,8 +109,8 @@ void movieList::addMovie() {
 
     // Prompt and store the name of the movie
     cout << "Enter name of movie: ";
-    cin >> movieNames[pos];
-    outfile << movieNames[pos] << " ";
+    getline(cin, movieNames[pos]);
+    outfile << movieNames[pos] << " " << endl;
 
     // Prompt and store the rating of the movie with validation
     do {
@@ -203,8 +206,10 @@ void movieList::displayMovieList() {
 
     // Read the data from the file into the arrays
     pos = 0;
-    while (inFile >> movieNames[pos] >> movierating[pos] >> releaseYear[pos]) {
-        inFile.ignore(); // Ignore the space
+    pos = 0;
+    while (getline(inFile, movieNames[pos])) {
+        inFile >> movierating[pos] >> releaseYear[pos];
+        inFile.ignore(); // Consume the newline character
         getline(inFile, reviews[pos]); // Read the review
         pos++;
     }
